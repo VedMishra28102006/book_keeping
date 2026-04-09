@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta content="initial-scale=1.0,user-scalable=no,width=device-width" name="viewport">
+		<meta content="ie=edge" http-equiv="X-UA-Compatible">
+		<style>
+			* {
+				box-sizing: border-box;
+			}
+			body {
+				background-color: rgb(30, 30, 30);
+				display: grid;
+				font-family: sans-serif;
+				height: 100vh;
+				margin: 0px;
+				overflow: hidden;
+				padding: 0px;
+				place-items: center;
+				user-select: none;
+			}
+			.form_wrapper {
+				background-image: linear-gradient(pink, yellow);
+				border-radius: 10px;
+				box-shadow: 0px 0px 20px black;
+				margin: 10px;
+				padding: 5px;
+				position: fixed;
+			}
+			.form_wrapper > form {
+				background-color: black;
+				border-radius: inherit;
+				display: flex;
+				flex-direction: column;
+				padding: 50px;
+			}
+			.form_wrapper > form > button {
+				background-image: linear-gradient(pink, yellow);
+				border: none;
+				border-radius: 200px;
+				color: black;
+				cursor: pointer;
+				font-weight: bold;
+				padding: 10px;
+			}
+			.form_wrapper > form > .error {
+				background-clip: text;
+				background-image: linear-gradient(pink, yellow);
+				color: transparent;
+				font-size: small;
+				padding: 2px;
+				text-align: center;
+			}
+			.form_wrapper > form > h1 {
+				color: white;
+				font-weight: bold;
+				text-align: center;
+			}
+
+			.form_wrapper > form > .input_wrapper {
+				justify-content: center;
+				border-radius: 200px;
+				display: flex;
+				padding: 3px;
+			}
+			.form_wrapper > form > .input_wrapper > input {
+				background-color: rgb(50, 50, 50);
+				border: none;
+				border-radius: 200px;
+				color: white;
+				outline: none;
+				padding: 10px;
+				text-align: center;
+				width: 100%;
+			}
+			.list {
+				display: flex;
+				flex-direction: column;
+				list-style-type: none;
+				margin: 0px;
+				overflow: auto;
+				padding: 0px;
+			}
+			.list > li {
+				background-image: linear-gradient(to right, rgb(30, 30, 30), black);
+				border-top: 1px solid grey;
+				color: white;
+				display: flex;
+				flex-direction: row;
+				font-size: large;
+				position: relative;
+			}
+			.list > li > p {
+				flex: 1;
+				margin: 0;
+				padding: 10px;
+			}
+			.list > li:first-child {
+				border-top: none;
+			}
+			.list > li:hover {
+				background-image: linear-gradient(to right, rgb(50, 50, 50), rgb(30, 30, 30));
+				cursor: pointer;
+			}
+			.list > li > form {
+				display: flex;
+				flex: 1;
+			}
+			.list > li > form > button {
+				background-image: linear-gradient(to right, pink, yellow);
+				border: none;
+				color: black;
+				cursor: pointer;
+				font-size: large;
+				font-weight: bold;
+				padding: 10px;
+			}
+			.list > li > form > input {
+				background-color: transparent;
+				border: none;
+				color: white;
+				flex: 1;
+				font-size: large;
+				padding: 10px;
+				outline: none;
+			}
+			.menu {
+				display: grid;
+				grid-template-columns: 1fr;
+				grid-template-rows: auto 1fr auto;
+				height: 100vh;
+				width: 100%;
+			}
+			.options {
+				box-shadow: 0px 0px 5px black;
+				display: none;
+				flex-direction: column;
+				list-style-type: none;
+				padding: 0px;
+				position: absolute;
+				right: 10px;
+				top: 10px;
+				z-index: 1;
+			}
+			.options > li {
+				background-image: linear-gradient(to right, rgb(30, 30, 30), black);
+				padding: 5px 20px 5px;
+				text-align: center;
+			}
+			.options > li:hover {
+				background-image: linear-gradient(to right, rgb(50, 50, 50), rgb(30, 30, 30));
+				cursor: pointer;
+			}
+			.options.visible {
+				display: flex;
+			}
+			.options_button {
+				background-color: transparent;
+				border: none;
+				color: white;
+				cursor: pointer;
+				float: right;
+				font-size: large;
+				font-weight: bold;
+			}
+			.toolbar {
+				align-items: center;
+				background-color: black;
+				box-shadow: 0px 0px 5px black;
+				display: flex;
+				flex-direction: row;
+				justify-content: start;
+				overflow-x: auto;
+				padding: 0px;
+				width: 100%;
+			}
+			.toolbar > button {
+				background-color: transparent;
+				border: none;
+				display: flex;
+				flex: 1;
+				flex-direction: column;
+				font-size: medium;
+				font-weight: bold;
+				justify-content: flex-start;
+				margin: 0px 5px 0px;
+				padding: 15px;
+			}
+			.toolbar > button > i {
+				background-clip: text;
+				background-image: linear-gradient(to right, pink, yellow);
+				color: transparent;
+				font-size: 30px;
+			}
+			.toolbar > button > small {
+				color: white;
+				margin-top: 5px;
+			}
+			.toolbar > button:hover {
+				background-color: rgba(255, 255, 255, 0.05);
+				cursor: pointer;
+			}
+			.toolbar_wrapper {
+				background-image: linear-gradient(to right, pink, yellow);
+				bottom: 0px;
+				box-shadow: 0px 0px 5px black;
+				margin: 0px;
+				padding: 0px;
+				padding-top: 3px;
+				position: sticky;
+				width: 100%;
+				z-index: 1;
+			}
+			.top_form {
+				background-image: linear-gradient(to right, pink, yellow);
+				box-shadow: 0px 0px 5px black;
+				display: flex;
+				flex-direction: row;
+				padding: 0px;
+				position: sticky;
+				top: 0px;
+				width: 100%;
+				z-index: 1;
+			}
+			.top_form > button {
+				background-image: linear-gradient(to right, pink, yellow);
+				border: none;
+				box-shadow: 0px 0px 5px black;
+				cursor: pointer;
+				font-size: large;
+				font-weight: bold;
+				padding: 10px 20px 10px;
+				z-index: 1;
+			}
+			.top_form > .tf_wrapper {
+				background-image: linear-gradient(to right, pink, yellow);
+				border-left: 1px solid black;	
+				border-right: 1px solid black;	
+				display: flex;
+				flex: 1;
+				padding: 5px;
+			}
+			.top_form > .tf_wrapper > input {
+				background-color: rgba(0, 0, 0, 0.7);
+				border: none;
+				caret-color: white;
+				color: white;
+				flex: 1;
+				font-size: large;
+				outline: none;
+				padding: 10px;
+			}
+			.top_form > .tf_wrapper > input::placeholder {
+				color: white;
+			}
+		</style>
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+		<title>Accounting - admin</title>
+	</head>
+	<body>
+		<div class="form_wrapper" style="display: none; z-index: 2">
+			<form id="create_form">
+				<h1>Create User</h1>
+				<div class="input_wrapper">
+					<input id="username" name="username" placeholder="username" type="text">
+				</div>
+				<small class="error" id="error_username"><br></small>
+				<div class="input_wrapper">
+					<input id="password" name="password" placeholder="password" type="password">
+				</div>
+				<small class="error" id="error_password"><br></small>
+				<button type="submit">Submit</button>
+			</form>
+		</div>
+		<div class="menu">
+			<form class="top_form" id="user_form">
+				<button id="search_btn" type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+				<div class="tf_wrapper">
+					<input id="user_name" name="user_name" placeholder="username..." type="text">
+				</div>
+			</form>
+			<ul class="list" id="user_list"></ul>
+			<div class="toolbar_wrapper"><div class="toolbar">
+				<button onclick="window.location.href = '/'">
+					<i class="fa-solid fa-house"></i>
+					<small>Home</small>
+				</button>
+				<button onclick="
+					event.stopPropagation();
+					create_form.parentNode.style.display = 'block';
+				">
+					<i class="fa-solid fa-plus"></i>
+					<small>Add User</small>
+				</button>
+				<button onclick="export_data()">
+					<i class="fa-solid fa-file-export"></i>
+					<small>Export Data</small>
+				</button>
+				<input id="importer" style="display: none" type="file">
+				<button onclick="import_data()">
+					<i class="fa-solid fa-file-import"></i>
+					<small>Import Data</small>
+				</button>
+				<button onclick="
+					document.cookie = 'user_token=;';
+					window.location.href = '/auth';
+				">
+					<i class="fa-solid fa-sign-out"></i>
+					<small>Sign Out</small>
+				</button>
+			</div></div>
+		</div>
+		<script>
+			let create_form = document.getElementById("create_form");
+			var inputs = create_form.getElementsByTagName("input");
+			for (let i=0; i < inputs.length; i++) {
+				if (!inputs[i].style.backgroundImage) {
+					inputs[i].addEventListener("focus", () => {
+						inputs[i].parentNode.style.backgroundColor = "grey";
+					});
+					inputs[i].addEventListener("blur", () => {
+						inputs[i].parentNode.style.backgroundColor = "";
+					});
+				}
+			}
+			let user_form = document.getElementById("user_form");
+			let user_list = document.getElementById("user_list");
+			let user_item = (row) => {
+				return `<li id="${row.id}" status="${row.status}">
+					<p>${row.username}</p>
+					<p class='status' style='flex: 0'>${(row.status == "locked") ? "(locked)" : ""}</p>
+					<button class="options_button" onclick="event.stopPropagation();showOptions('${row.id}');">&vellip;</button>
+					<ul class="options" id="options${row.id}">
+						<li onclick="event.stopPropagation();delete_user('${row.id}')">delete</li>
+						<li onclick="event.stopPropagation();toggle_user(this, this.parentNode.parentNode.querySelector('.status'), '${row.id}')">${(row.status == "locked") ? "unlock" : "lock"}</li>
+					</ul>
+				</li>`;
+			};
+			let showOptions = (id) => {
+				let options = document.getElementsByClassName("options");
+				for (option of options) {
+					if (option.classList.contains("visible")) {
+						option.classList.remove("visible");
+					}
+				}
+				document.getElementById(`options${id}`).classList.add("visible");
+			};
+			document.addEventListener("click", (event) => {
+				let options = document.getElementsByClassName("visible");
+				if (options) {
+					for (option of options) {
+						option.classList.remove("visible");
+					}
+				}
+				if (window.getComputedStyle(create_form.parentNode).getPropertyValue("display") != "none" && !create_form.parentNode.contains(event.target)) {
+					create_form.parentNode.style.display = "none";
+				}
+			});
+			let insearch = false;
+			user_form.addEventListener("submit", (event) => {
+				event.preventDefault();
+				let data = new FormData(user_form);
+				if (event.submitter.id == "search_btn") {
+					if (!insearch) { insearch = true; }
+					fetch_user(data.get("user_name"));
+				}
+			});
+			var clean_errors = () => {
+				var input_wrappers = document.getElementsByClassName("input_wrapper");
+				var labels = document.getElementsByClassName("error");
+				for (var i=0; i < input_wrappers.length; i++) {
+					input_wrappers[i].style.backgroundImage = "none";
+				}
+				for (var i=0; i < labels.length; i++) {
+					labels[i].innerHTML = "<br>";
+				}
+			};
+			create_form.addEventListener("submit", (event) => {
+                                event.preventDefault();
+				var data = new FormData(create_form);
+				fetch("/user/create", {
+					body: data,
+					method: "POST"
+				}).then(response => response.json()).then(data => {
+					if (data.error && data.field) {
+						clean_errors();
+						var input = document.getElementById(data.field);
+						var input_wrapper = input.parentNode;
+						input_wrapper.style.backgroundImage = "linear-gradient(pink, yellow)";
+						document.getElementById("error_"+data.field).innerHTML = data.error;
+					} else if (data.success) {
+						clean_errors();
+						let temp_func = () => {
+							create_form.parentNode.style.display = "none";
+							if (!insearch) {
+								user_list.insertAdjacentHTML("beforeend", user_item(data.row));
+							}
+							user_list.children[user_list.children.length-1].scrollIntoView({
+								behavior: "smooth",
+								block: "center"
+							});
+							user_list.children[user_list.children.length-1].style.backgroundImage = "linear-gradient(to right, rgb(50, 50, 50), rgb(30, 30, 30))";
+							setTimeout(() => {
+								user_list.children[user_list.children.length-1].style.backgroundImage = "linear-gradient(to right, rgb(30, 30, 30), black)";
+							}, 500);
+						};
+						if (insearch) {
+							fetch_user().then(() =>{
+								insearch = true;
+								temp_func();
+							});
+						} else {
+							temp_func();
+						}
+					}
+				}).catch(error => {alert(error)});
+			});
+			let fetch_user = (user_q=null) => {
+				return new Promise((resolve, reject) => {
+					user_list.innerHTML = "";
+					fetch(`/user/read${(user_q) ? `?user_q=${user_q}` : ""}`, {method: "GET"})
+					.then(response => response.json())
+					.then(data => {
+						for (row of data) {
+							user_list.insertAdjacentHTML("beforeend", user_item(row));
+						}
+						resolve(data);
+					})
+					.catch(error => {
+						reject(error);
+					});
+				});
+			};
+			fetch_user();
+			let toggle_user = (target, status, id) => {
+				document.getElementById(`options${id}`).classList.remove("visible");
+				let data = new FormData();
+				data.append("id", id);
+				data.append("purpose", "update_status");
+				fetch("/user/update", {
+					method: "PATCH",
+					body: data
+				})
+				.then(response => response.json())
+				.then(data => {
+					if (data.error) {
+						alert(data.error);
+					} else if (data.success) {
+						document.getElementById(`${id}`).setAttribute("status", data.status);
+						target.innerHTML = (data.status == "locked") ? "unlock" : "lock";
+						status.innerHTML = (data.status == "locked") ? "(locked)" : "";
+					}
+				})
+				.catch(error => {alert(error);});
+			};
+			let delete_user = (id) => {
+				document.getElementById(`options${id}`).classList.remove("visible");
+				let data = new FormData();
+				data.append("id", id);
+				fetch("/user/delete", {
+					method: "DELETE",
+					body: data
+				})
+				.then(response => response.json())
+				.then(data => {
+					if (data.error) {
+						alert(data.error);
+					} else if (data.success) {
+						document.getElementById(`${id}`).remove();
+					}
+				})
+				.catch(error => {alert(error);});
+			};
+			let export_data = async () => {
+				await fetch(`/export`, {method: "GET"})
+				.then(response => response.blob())
+				.then(data => {
+					if (data.error) {
+						alert(data.error);
+					} else {
+						let url = URL.createObjectURL(data);
+						let a = document.createElement('a');
+						a.href = url;
+						a.download = `data.db`;
+						document.body.appendChild(a);
+						a.click();
+						document.body.removeChild(a);
+						URL.revokeObjectURL(url);
+					}
+				})
+				.catch(error => {alert(error);});
+			};
+			let import_data = async () => {
+				let importer = document.getElementById("importer");
+				let file = await new Promise(resolve => {
+					importer.onchange = () => resolve(importer.files[0]);
+					importer.click();
+				});
+				if (!file) return;
+				let data = new FormData();
+				data.append("data", file);
+				await fetch("/import", {
+					method: "POST",
+					body: data
+				})
+				.then(response => response.json())
+				.then(data => {
+					if (data.error) {
+						alert(data.error);
+					} else {
+						fetch_user();
+					}
+				})
+				.catch(error => {alert(error);});
+			};
+		</script>
+	</body>
+</html>

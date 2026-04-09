@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+		<meta content="ie=edge" http-equiv="X-UA-Compatible">
+		<style>
+			* {
+				box-sizing: border-box;
+			}
+			body {
+				background-color: rgb(30, 30, 30);
+				display: grid;
+				font-family: sans-serif;
+				height: 100vh;
+				margin: 0px;
+				overflow: hidden;
+				padding: 0px;
+				place-items: center;
+				user-select: none;
+			}
+			.form_wrapper {
+				background-image: linear-gradient(pink, yellow);
+				border-radius: 10px;
+				box-shadow: 0px 0px 20px black;
+				margin: 10px;
+				padding: 5px;
+				position: fixed;
+			}
+			.form_wrapper > form {
+				background-color: black;
+				border-radius: inherit;
+				display: flex;
+				flex-direction: column;
+				padding: 50px;
+			}
+			.form_wrapper > form > button {
+				background-image: linear-gradient(pink, yellow);
+				border: none;
+				border-radius: 200px;
+				color: black;
+				cursor: pointer;
+				font-weight: bold;
+				padding: 10px;
+			}
+			.form_wrapper > form > .error {
+				background-clip: text;
+				background-image: linear-gradient(pink, yellow);
+				color: transparent;
+				font-size: small;
+				padding: 2px;
+				text-align: center;
+			}
+			.form_wrapper > form > h1 {
+				color: white;
+				font-weight: bold;
+				text-align: center;
+			}
+
+			.form_wrapper > form > .input_wrapper {
+				justify-content: center;
+				border-radius: 200px;
+				display: flex;
+				padding: 3px;
+			}
+			.form_wrapper > form > .input_wrapper > input {
+				background-color: rgb(50, 50, 50);
+				border: none;
+				border-radius: 200px;
+				color: white;
+				outline: none;
+				padding: 10px;
+				text-align: center;
+				width: 100%;
+			}
+		</style>
+		<title>Accounting - auth</title>
+	</head>
+	<body>
+		<div class="form_wrapper">
+			<form id="auth_form">
+				<h1>Sign In</h1>
+				<div class="input_wrapper">
+					<input id="username" name="username" placeholder="username" type="text">
+				</div>
+				<small class="error" id="error_username"><br></small>
+				<div class="input_wrapper">
+					<input id="password" name="password" placeholder="password" type="password">
+				</div>
+				<small class="error" id="error_password"><br></small>
+				<button type="submit">Submit</button>
+			</form>
+		</div>
+		<script>
+			var inputs = document.getElementsByTagName("input");
+			for (let i=0; i < inputs.length; i++) {
+				if (!inputs[i].style.backgroundImage) {
+					inputs[i].addEventListener("focus", () => {
+						inputs[i].parentNode.style.backgroundColor = "grey";
+					});
+					inputs[i].addEventListener("blur", () => {
+						inputs[i].parentNode.style.backgroundColor = "";
+					});
+				}
+			}
+			var clean_errors = () => {
+				var input_wrappers = document.getElementsByClassName("input_wrapper");
+				var labels = document.getElementsByClassName("error");
+				for (var i=0; i < input_wrappers.length; i++) {
+					input_wrappers[i].style.backgroundImage = "none";
+				}
+				for (var i=0; i < labels.length; i++) {
+					labels[i].innerHTML = "<br>";
+				}
+			};
+			var auth_form = document.getElementById("auth_form");
+			auth_form.addEventListener("submit", (e) => {
+				e.preventDefault();
+				var data = new FormData(auth_form);
+				fetch("/auth", {
+					body: data,
+					method: "POST"
+				}).then(response => response.json()).then(data => {
+					if (data.error && data.field) {
+						clean_errors();
+						var input = document.getElementById(data.field);
+						var input_wrapper = input.parentNode;
+						input_wrapper.style.backgroundImage = "linear-gradient(pink, yellow)";
+						document.getElementById("error_"+data.field).innerHTML = data.error;
+					} else if (data.success && data.user_token) {
+						document.cookie = `user_token=${encodeURIComponent(data.user_token)};Max-Age=${365*24*60*60};Path=/;SameSite=True;Secure`;
+						window.location.href = "/";
+					}
+				}).catch(error => {alert(error)});
+			});
+		</script>
+	</body>
+
+</html>
