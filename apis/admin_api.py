@@ -1,12 +1,9 @@
 from apis.auth_api import check_fields, check_signed
 import bcrypt, os, random, re, sqlite3
-from dotenv import load_dotenv
 from flask import Blueprint, current_app, jsonify, redirect, render_template, request, send_file
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-
-load_dotenv()
 
 db = sqlite3.connect("data.db")
 cursor = db.cursor()
@@ -22,7 +19,7 @@ if not row:
 			break
 	admin_password = bcrypt.hashpw(os.getenv("ADMIN_PASSWORD").encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 	cursor.execute("INSERT INTO users (username, password, token, admin) VALUES(?, ?, ?, ?)",
-		(os.getenv("ADMIN_USERNAME"), admin_password, user_token, 1))
+		(os.getenv("ADMIN_USERNAME").strip().lower(), admin_password, user_token, 1))
 	db.commit()
 db.close()
 

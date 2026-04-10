@@ -36,16 +36,20 @@ def status():
 		return redirect("/auth")
 	return jsonify({"status": signed.get("status"), "admin": signed.get("admin")}), 200
 
-@accounting.route("/fy", methods=["POST", "GET", "PATCH", "DELETE"])
-def fy():
+@accounting.route("/fy/<uid>", methods=["POST", "GET", "PATCH", "DELETE"])
+def fy(uid):
 	signed = check_signed(request.cookies)
 	if not signed:
 		return redirect("/auth")
 	db = sqlite3.connect("data.db")
 	cursor = db.cursor()
 	cursor.row_factory = sqlite3.Row
-	cursor.execute("SELECT id FROM users WHERE token=?", (request.cookies.get("user_token"),))
-	user_id = dict(cursor.fetchone()).get("id")
+	cursor.execute("SELECT id FROM users WHERE id=?", (uid,))
+	row = cursor.fetchone()
+	if row and signed.get("admin") and row["id"] != signed.get("id"):
+		user_id = row["id"]
+	else:
+		user_id = signed.get("id")
 	if request.method == "POST":
 		if signed.get("status") == "locked":
 			db.close()
@@ -179,16 +183,20 @@ def fy():
 		db.close()
 		return jsonify({"success": 1}), 200
 
-@accounting.route("/journal/<id>", methods=["POST", "GET"])
-def journal(id):
+@accounting.route("/journal/<uid>/<id>", methods=["POST", "GET"])
+def journal(uid, id):
 	signed = check_signed(request.cookies)
 	if not signed:
 		return redirect("/auth")
 	db = sqlite3.connect("data.db")
 	cursor = db.cursor()
 	cursor.row_factory = sqlite3.Row
-	cursor.execute("SELECT id FROM users WHERE token=?", (request.cookies.get("user_token"),))
-	user_id = dict(cursor.fetchone()).get("id")
+	cursor.execute("SELECT id FROM users WHERE id=?", (uid,))
+	row = cursor.fetchone()
+	if row and signed.get("admin") and row["id"] != signed.get("id"):
+		user_id = row["id"]
+	else:
+		user_id = signed.get("id")
 	cursor.execute(f"SELECT * FROM fys_{user_id} WHERE id=?", (id,))
 	row = cursor.fetchone()
 	if not row:
@@ -267,15 +275,20 @@ def journal(id):
 		db.close()
 		return jsonify({"success": 1}), 200
 
-@accounting.route("/ledger/<id>", methods=["GET"])
-def ledger(id):
-	if not check_signed(request.cookies):
+@accounting.route("/ledger/<uid>/<id>", methods=["GET"])
+def ledger(uid, id):
+	signed = check_signed(request.cookies)
+	if not signed:
 		return redirect("/auth")
 	db = sqlite3.connect("data.db")
 	cursor = db.cursor()
 	cursor.row_factory = sqlite3.Row
-	cursor.execute("SELECT id FROM users WHERE token=?", (request.cookies.get("user_token"),))
-	user_id = dict(cursor.fetchone()).get("id")
+	cursor.execute("SELECT id FROM users WHERE id=?", (uid,))
+	row = cursor.fetchone()
+	if row and signed.get("admin") and row["id"] != signed.get("id"):
+		user_id = row["id"]
+	else:
+		user_id = signed.get("id")
 	cursor.execute(f"SELECT id FROM fys_{user_id} WHERE id=?", (id,))
 	row = cursor.fetchone()
 	if not row:
@@ -353,16 +366,20 @@ def ledger(id):
 			"total": total
 		}), 200
 
-@accounting.route("/bs/<fy_id>", methods=["GET", "PATCH"])
-def bs(fy_id):
+@accounting.route("/bs/<uid>/<fy_id>", methods=["GET", "PATCH"])
+def bs(uid, fy_id):
 	signed = check_signed(request.cookies)
 	if not signed:
 		return redirect("/auth")
 	db = sqlite3.connect("data.db")
 	cursor = db.cursor()
 	cursor.row_factory = sqlite3.Row
-	cursor.execute("SELECT id FROM users WHERE token=?", (request.cookies.get("user_token"),))
-	user_id = dict(cursor.fetchone()).get("id")
+	cursor.execute("SELECT id FROM users WHERE id=?", (uid,))
+	row = cursor.fetchone()
+	if row and signed.get("admin") and row["id"] != signed.get("id"):
+		user_id = row["id"]
+	else:
+		user_id = signed.get("id")
 	cursor.execute(f"SELECT * FROM fys_{user_id} WHERE id=?", (fy_id,))
 	row = cursor.fetchone()
 	if not row:

@@ -506,6 +506,8 @@
 			</div>
 		</main>
 		<script>
+			let url_params = new URLSearchParams(window.location.search);
+			let uid = (url_params.has("id")) ? url_params.get("id") : "null";
 			let user_status = null;
 			fetch("/status", {method: "GET"})
 			.then(response => response.json())
@@ -590,7 +592,7 @@
 				}
 				let data = new FormData(fy_form);
 				if (event.submitter.id == "add_btn") {
-					fetch("/fy", {
+					fetch(`/fy/${uid}`, {
 						method: "POST",
 						body: data
 					}).then(response => response.json())
@@ -653,7 +655,7 @@
 			let fetch_fy = (fy_q=null) => {
 				return new Promise((resolve, reject) => {
 					fy_list.innerHTML = "";
-					fetch(`/fy${(fy_q) ? `?fy_q=${fy_q}` : ""}`, {method: "GET"})
+					fetch(`/fy/${uid}${(fy_q) ? `?fy_q=${fy_q}` : ""}`, {method: "GET"})
 					.then(response => response.json())
 					.then(data => {
 						for (row of data) {
@@ -693,7 +695,7 @@
 				data.append("id", id);
 				data.append("fy_name", fy_name);
 				data.append("purpose", "update_text");
-				fetch("/fy", {
+				fetch(`/fy/${uid}`, {
 					method: "PATCH",
 					body: data
 				})
@@ -761,7 +763,7 @@
 				}
 				let data = new FormData();
 				data.append("id", id);
-				fetch("/fy", {
+				fetch(`/fy/${uid}`, {
 					method: "DELETE",
 					body: data
 				})
@@ -784,7 +786,7 @@
 				let data = new FormData();
 				data.append("id", id);
 				data.append("purpose", "update_status");
-				fetch("/fy", {
+				fetch(`/fy/${uid}`, {
 					method: "PATCH",
 					body: data
 				})
@@ -864,7 +866,7 @@
 			};
 			let fetch_journal = (id) => {
 				journal_rows.innerHTML = "";
-				fetch(`/journal/${id}`, {method: "GET"})
+				fetch(`/journal/${uid}/${id}`, {method: "GET"})
 				.then(response => response.json())
 				.then(data => {
 					if (data.error) {
@@ -901,7 +903,7 @@
 					data[i].amount = amounts[i].value;
 					data[i].description = descriptions[i].value;
 				}
-				fetch(`/journal/${journal_form.getAttribute("fy_id")}`, {
+				fetch(`/journal/${uid}/${journal_form.getAttribute("fy_id")}`, {
 					method: "POST",
 					body: JSON.stringify(data),
 					headers: {"Content-Type": "application/json"}
@@ -937,7 +939,7 @@
 				if (!journal_rows.children.length || !submission) {
 					return;
 				}
-				await fetch(`/journal/${journal_form.getAttribute("fy_id")}`, {method: "GET"})
+				await fetch(`/journal/${uid}/${journal_form.getAttribute("fy_id")}`, {method: "GET"})
 				.then(response => response.json())
 				.then(data => {
 					if (data.error) {
@@ -1063,7 +1065,7 @@
 			let fetch_ledger_menu = (ledger_q=null) => {
 				ledger_list.innerHTML = "";
 				ledger_search.querySelector("input").value = "";
-				fetch(`/ledger/${journal_form.getAttribute("fy_id")+ ((ledger_q) ? `?ledger_q=${ledger_q}` : "")}`, {method: "GET"})
+				fetch(`/ledger/${uid}/${journal_form.getAttribute("fy_id")+ ((ledger_q) ? `?ledger_q=${ledger_q}` : "")}`, {method: "GET"})
 				.then(response => response.json())
 				.then(data => {
 					if (data.error) {
@@ -1083,7 +1085,7 @@
 			});
 			let fetch_ledger_account = (account) => {
 				ledger_table.querySelector("tbody").innerHTML = "";
-				fetch(`/ledger/${journal_form.getAttribute("fy_id")}?account=${account}`, {method: "GET"})
+				fetch(`/ledger/${uid}/${journal_form.getAttribute("fy_id")}?account=${account}`, {method: "GET"})
 				.then(response => response.json())
 				.then(data => {
 					if (data.error) {
@@ -1192,7 +1194,7 @@
 					return;
 				}
 				for (let li of ledger_list.children) {
-					let request = fetch(`/ledger/${journal_form.getAttribute("fy_id")}?account=${li.innerText}`, {method: "GET"})
+					let request = fetch(`/ledger/${uid}/${journal_form.getAttribute("fy_id")}?account=${li.innerText}`, {method: "GET"})
 					.then(response => response.json())
 					.then(data => {
 						if (data.error) {
@@ -1257,7 +1259,7 @@
 				data.append("subtype", subtype);
 				data.append("operation", operation);
 				data.append("account", account);
-				fetch(`/bs/${journal_form.getAttribute("fy_id")}`, {
+				fetch(`/bs/${uid}/${journal_form.getAttribute("fy_id")}`, {
 					method: "PATCH",
 					body: data
 				})
@@ -1278,7 +1280,7 @@
 			let bs_table = document.getElementById("bs_table");
 			let fetch_bs = () => {
 				bs_table.querySelector("tbody").innerHTML = "";
-				fetch(`/bs/${journal_form.getAttribute("fy_id")}`, {method: "GET"})
+				fetch(`/bs/${uid}/${journal_form.getAttribute("fy_id")}`, {method: "GET"})
 				.then(response => response.json())
 				.then(data => {
 					if (data.error) {
@@ -1352,7 +1354,7 @@
 				if (!bs_table.querySelector("tbody").children.length) {
 					return;
 				}
-				await fetch(`/bs/${journal_form.getAttribute("fy_id")}`, {method: "GET"})
+				await fetch(`/bs/${uid}/${journal_form.getAttribute("fy_id")}`, {method: "GET"})
 				.then(response => response.json())
 				.then(data => {
 					if (data.error) {
