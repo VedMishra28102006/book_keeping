@@ -10,10 +10,13 @@
 			}
 			body {
 				background-color: rgb(30, 30, 30);
-				display: flex;
+				display: grid;
 				font-family: sans-serif;
+				height: 100vh;
 				margin: 0px;
+				overflow: hidden;
 				padding: 0px;
+				place-items: center;
 				user-select: none;
 			}
 			#bs,
@@ -22,12 +25,6 @@
 				display: none;
 				margin: 0px;
 				padding: 0px;
-				width: 100%;
-			}
-			#fy {
-				display: flex;
-				flex-direction: column;
-				justify-content: center;
 				width: 100%;
 			}
 			#fy_list > li[status="closed"] > p:nth-child(2) {
@@ -41,6 +38,7 @@
 				flex-direction: column;
 				list-style-type: none;
 				margin: 0px;
+				overflow: auto;
 				padding: 0px;
 			}
 			.list > li {
@@ -53,13 +51,11 @@
 				position: relative;
 			}
 			.list > li > p {
-				flex: 0;
 				margin: 0;
-				padding: 10px 0px;
-			}
-			.list > li > p:nth-child(1) {
-				flex: 1;
 				padding: 10px;
+			}
+			.list > li > p:first-child {
+				flex: 1;
 			}
 			.list > li:first-child {
 				border-top: none;
@@ -103,9 +99,11 @@
 			#ledger_account {
 				display: none;
 			}
-			main {
-				display: flex;
-				justify-content: center;
+			.menu {
+				display: grid;
+				grid-template-columns: 1fr;
+				grid-template-rows: auto 1fr auto;
+				height: 100vh;
 				width: 100%;
 			}
 			.options {
@@ -144,9 +142,9 @@
 				background-image: linear-gradient(to right, pink, yellow);
 				border-collapse: separate;
 				border-spacing: 1px;
-				table-layout: fixed;
-				width: 100%;
-				word-wrap: break-word;
+				min-width: 100%;
+				table-layout: auto;
+				width: max-content;
 			}
 			table > tbody > tr > td {
 				background-color: rgb(30, 30, 30);
@@ -222,6 +220,7 @@
 			.table_wrapper {
 				background-color: rgb(30, 30, 30);
 				margin: 0px;
+				overflow: auto;
 				padding: 0px;
 				position: relative;
 				width: 100%;
@@ -233,7 +232,7 @@
 				display: flex;
 				flex-direction: row;
 				justify-content: start;
-				overflow-x: auto;
+				overflow: auto;
 				padding: 0px;
 				width: 100%;
 			}
@@ -265,12 +264,13 @@
 			}
 			.toolbar_wrapper {
 				background-image: linear-gradient(to right, pink, yellow);
-				bottom: 0px;
+				box-shadow: 0px 0px 5px black;
 				margin: 0px;
+				overflow: auto;
 				padding: 0px;
 				padding-top: 3px;
-				position: fixed;
 				width: 100%;
+				z-index: 1;
 			}
 			.top_form {
 				background-image: linear-gradient(to right, pink, yellow);
@@ -278,8 +278,7 @@
 				display: flex;
 				flex-direction: row;
 				padding: 0px;
-				position: sticky;
-				top: 0px;
+				width: 100%;
 				z-index: 1;
 			}
 			.top_form > button {
@@ -320,166 +319,119 @@
 		<title>Accounting</title>
 	</head>
 	<body>
-		<main>
-			<div id="fy">
-				<form class="top_form" id="fy_form">
-					<button id="search_btn" type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+		<div class="menu" id="fy">
+			<form class="top_form" id="fy_form">
+				<button id="search_btn" type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+				<div class="tf_wrapper">
+					<input id="fy_name" name="fy_name" placeholder="search fy..." type="text">
+				</div>
+				<button id="add_btn" type="submit"><i class="fa-solid fa-plus"></i></button>
+			</form>
+			<ul class="list" id="fy_list"></ul>
+			<div class="toolbar_wrapper"><div class="toolbar">
+				<button onclick="
+					document.cookie = 'user_token=;';
+					window.location.href = '/auth';
+				">
+					<i class="fa-solid fa-sign-out"></i>
+					<small>Sign Out</small>
+				</button>
+			</div></div>
+		</div>
+		<div class="menu" id="journal">
+			<div></div>
+			<form class="table_wrapper" id="journal_form">
+				<table>
+					<thead><tr>
+						<th><p>Date</p></th>
+						<th><p>A/c Debited</p></th>
+						<th><p>A/c Credited</p></th>
+						<th><p>Amount</p></th>
+						<th><p>Description</p></th>
+					</tr></thead>
+					<tbody id="journal_rows"></tbody>
+					<tbody id="journal_total"></tbody>
+				</table>
+			</form>
+			<div class="toolbar_wrapper"><div class="toolbar">
+				<button onclick="show_fy()">
+					<i class="fa-solid fa-house"></i>
+					<small>Home</small>
+				</button>
+				<button onclick="delete_row(event)">
+					<i class="fa-solid fa-trash"></i>
+					<small>Delete Row</small>
+				</button>
+				<button onclick="if (status == 'closed') { return; }; add_row()">
+					<i class="fa-solid fa-plus"></i>
+					<small>Add Row</small>
+				</button>
+				<button onclick="submit_journal()">
+					<i class="fa-solid fa-floppy-disk"></i>
+					<small>Save Book</small>
+				</button>
+				<button onclick="export_journal()">
+					<i class="fa-solid fa-file-export"></i>
+					<small>Export Book</small>
+				</button>
+				<button onclick="
+					journal.style.display='none';
+					ledger.style.display='block';
+				">
+					<i class="fa-solid fa-book"></i>
+					<small>Ledger</small>
+				</button>
+			</div></div>
+		</div>
+		<div id="ledger">
+			<div class="menu" id="ledger_menu">
+				<form class="top_form" id="ledger_search">
 					<div class="tf_wrapper">
-						<input id="fy_name" name="fy_name" placeholder="search fy..." type="text">
+						<input id="ledger_q" name="ledger_q" placeholder="search account..." type="text">
 					</div>
-					<button id="add_btn" type="submit"><i class="fa-solid fa-plus"></i></button>
+					<button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
 				</form>
-				<ul class="list" id="fy_list"></ul>
-				<div class="toolbar_wrapper"><div class="toolbar">
-					<button onclick="
-						document.cookie = 'user_token=;';
-						window.location.href = '/auth';
-					">
-						<i class="fa-solid fa-sign-out"></i>
-						<small>Sign Out</small>
-					</button>
-				</div></div>
-			</div>
-			<div id="journal">
-				<form class="table_wrapper" id="journal_form">
-					<table>
-						<thead><tr>
-							<th><p>Date</p></th>
-							<th><p>A/c Debited</p></th>
-							<th><p>A/c Credited</p></th>
-							<th><p>Amount</p></th>
-							<th><p>Description</p></th>
-						</tr></thead>
-						<tbody id="journal_rows"></tbody>
-						<tbody id="journal_total"></tbody>
-					</table>
-				</form>
+				<ul class="list" id="ledger_list"></ul>
 				<div class="toolbar_wrapper"><div class="toolbar">
 					<button onclick="show_fy()">
 						<i class="fa-solid fa-house"></i>
 						<small>Home</small>
 					</button>
-					<button onclick="delete_row(event)">
-						<i class="fa-solid fa-trash"></i>
-						<small>Delete Row</small>
-					</button>
-					<button onclick="if (status == 'closed') { return; }; add_row()">
-						<i class="fa-solid fa-plus"></i>
-						<small>Add Row</small>
-					</button>
-					<button onclick="submit_journal()">
-						<i class="fa-solid fa-floppy-disk"></i>
-						<small>Save Book</small>
-					</button>
-					<button onclick="export_journal()">
+					<button onclick="export_ledgers()">
 						<i class="fa-solid fa-file-export"></i>
-						<small>Export Book</small>
+						<small>Export All</small>
 					</button>
 					<button onclick="
-						journal.style.display='none';
-						ledger.style.display='block';
+						ledger.style.display='none';
+						journal.style.display='grid';
 					">
 						<i class="fa-solid fa-book"></i>
-						<small>Ledger</small>
+						<small>Journal</small>
+					</button>
+					<button onclick="
+						ledger.style.display='none';
+						bs.style.display='grid';
+					">
+						<i class="fa-solid fa-book"></i>
+						<small>Balance Sheet</small>
 					</button>
 				</div></div>
 			</div>
-			<div id="ledger">
-				<div id="ledger_menu">
-					<form class="top_form" id="ledger_search">
-						<div class="tf_wrapper">
-							<input id="ledger_q" name="ledger_q" placeholder="search account..." type="text">
-						</div>
-						<button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
-					</form>
-					<ul class="list" id="ledger_list"></ul>
-					<div class="toolbar_wrapper"><div class="toolbar">
-						<button onclick="show_fy()">
-							<i class="fa-solid fa-house"></i>
-							<small>Home</small>
-						</button>
-						<button onclick="export_ledgers()">
-							<i class="fa-solid fa-file-export"></i>
-							<small>Export All</small>
-						</button>
-						<button onclick="
-							ledger.style.display='none';
-							journal.style.display='block';
-						">
-							<i class="fa-solid fa-book"></i>
-							<small>Journal</small>
-						</button>
-						<button onclick="
-							ledger.style.display='none';
-							bs.style.display='block';
-						">
-							<i class="fa-solid fa-book"></i>
-							<small>Balance Sheet</small>
-						</button>
-					</div></div>
-				</div>
-				<div id="ledger_account">
-					<div class="table_wrapper" id="ledger_table">
-						<table>
-							<thead>
-								<tr>
-									<th colspan="3"><p>Dr</p></th>
-									<th colspan="3"><p>Cr</p></th>
-								</tr>
-								<tr>
-									<th><p>Date</p></th>
-									<th><p>Particulars</p></th>
-									<th><p>Amount</p></th>
-									<th><p>Date</p></th>
-									<th><p>Particulars</p></th>
-									<th><p>Amount</p></th>
-								</tr>
-							</thead>
-							<tbody></tbody>
-						</table>
-					</div>
-					<div class="toolbar_wrapper"><div class="toolbar">
-						<button onclick="show_fy()">
-							<i class="fa-solid fa-house"></i>
-							<small>Home</small>
-						</button>
-						<button onclick="export_ledger()">
-							<i class="fa-solid fa-file-export"></i>
-							<small>Export Book</small>
-						</button>
-						<button onclick="
-							ledger.style.display='none';
-							journal.style.display='block';
-						">
-							<i class="fa-solid fa-book"></i>
-							<small>Journal</small>
-						</button>
-						<button onclick="
-							ledger_account.style.display='none';
-							ledger_menu.style.display='block';
-							ledger_table.setAttribute('account', '');
-						">
-							<i class="fa-solid fa-bars"></i>
-							<small>Ledger Menu</small>
-						</button>
-						<button onclick="
-							ledger.style.display='none';
-							bs.style.display='block';
-						">
-							<i class="fa-solid fa-book"></i>
-							<small>Balance Sheet</small>
-						</button>
-					</div></div>
-				</div>
-			</div>
-			<div id="bs">
-				<div class="table_wrapper" id="bs_table">
+			<div class="menu" id="ledger_account">
+				<div></div>
+				<div class="table_wrapper" id="ledger_table">
 					<table>
 						<thead>
 							<tr>
-								<th><p>Assets</p></th>
+								<th colspan="3"><p>Dr</p></th>
+								<th colspan="3"><p>Cr</p></th>
+							</tr>
+							<tr>
+								<th><p>Date</p></th>
+								<th><p>Particulars</p></th>
 								<th><p>Amount</p></th>
-								<th><p>Liabilities</p></th>
+								<th><p>Date</p></th>
+								<th><p>Particulars</p></th>
 								<th><p>Amount</p></th>
 							</tr>
 						</thead>
@@ -491,20 +443,68 @@
 						<i class="fa-solid fa-house"></i>
 						<small>Home</small>
 					</button>
-					<button onclick="export_bs()">
+					<button onclick="export_ledger()">
 						<i class="fa-solid fa-file-export"></i>
 						<small>Export Book</small>
 					</button>
 					<button onclick="
-						bs.style.display='none';
-						ledger.style.display='block';
+						ledger.style.display='none';
+						journal.style.display='grid';
 					">
-						<i class="fa-solid fa-arrow-left"></i>
-						<small>Back</small>
+						<i class="fa-solid fa-book"></i>
+						<small>Journal</small>
+					</button>
+					<button onclick="
+						ledger_account.style.display='none';
+						ledger_menu.style.display='block';
+						ledger_table.setAttribute('account', '');
+					">
+						<i class="fa-solid fa-bars"></i>
+						<small>Ledger Menu</small>
+					</button>
+					<button onclick="
+						ledger.style.display='none';
+						bs.style.display='grid';
+					">
+						<i class="fa-solid fa-book"></i>
+						<small>Balance Sheet</small>
 					</button>
 				</div></div>
 			</div>
-		</main>
+		</div>
+		<div class="menu" id="bs">
+			<div></div>
+			<div class="table_wrapper" id="bs_table">
+				<table>
+					<thead>
+						<tr>
+							<th><p>Assets</p></th>
+							<th><p>Amount</p></th>
+							<th><p>Liabilities</p></th>
+							<th><p>Amount</p></th>
+						</tr>
+					</thead>
+					<tbody></tbody>
+				</table>
+			</div>
+			<div class="toolbar_wrapper"><div class="toolbar">
+				<button onclick="show_fy()">
+					<i class="fa-solid fa-house"></i>
+					<small>Home</small>
+				</button>
+				<button onclick="export_bs()">
+					<i class="fa-solid fa-file-export"></i>
+					<small>Export Book</small>
+				</button>
+				<button onclick="
+					bs.style.display='none';
+					ledger.style.display='block';
+				">
+					<i class="fa-solid fa-arrow-left"></i>
+					<small>Back</small>
+				</button>
+			</div></div>
+		</div>
 		<script>
 			let url_params = new URLSearchParams(window.location.search);
 			let uid = (url_params.has("id")) ? url_params.get("id") : "null";
@@ -526,7 +526,7 @@
 			let fy_item = (row) => {
 				return `<li id="${row.id}" onclick="
 						fy.style.display = 'none';
-						journal.style.display = 'block';
+						journal.style.display = 'grid';
 						journal_form.setAttribute('fy_id', '${row.id}');
 						fetch_journal('${row.id}');
 						fetch_ledger_menu();
@@ -539,7 +539,7 @@
 						<li onclick="
 							event.stopPropagation();
 							fy.style.display = 'none';
-							journal.style.display = 'block';
+							journal.style.display = 'grid';
 							journal_form.setAttribute('fy_id', '${row.id}');
 							fetch_journal('${row.id}');
 							fetch_ledger_menu();
@@ -745,7 +745,7 @@
 						fy.onclick = (event) => {
 							event.stopPropagation();
 							fy.style.display = "none";
-							journal.style.display = "block";
+							journal.style.display = "grid";
 							journal_form.setAttribute("fy_id", `${id}`);
 							fetch_journal(`${id}`);
 							fetch_ledger_menu();
@@ -981,7 +981,7 @@
 			let ledger_item = (row) => {
 				return `<li id="ledger_${row.id}" onclick="
 					ledger_menu.style.display='none';
-					ledger_account.style.display='block';
+					ledger_account.style.display='grid';
 					fetch_ledger_account('${row.account}');
 				" subtype="${row.subtype}" type="${row.type}">
 					<p>${row.account}</p>
@@ -997,7 +997,7 @@
 							event.stopPropagation();
 							this.parentNode.classList.remove('visible');
 							ledger_menu.style.display='none';
-							ledger_account.style.display='block';
+							ledger_account.style.display='grid';
 							fetch_ledger_account('${row.account}');
 						">view</li>
 						<li onclick="
@@ -1147,7 +1147,7 @@
 			let refer_journal = (id) => {
 				if (!id) { return; }
 				ledger.style.display='none';
-				journal.style.display='block';
+				journal.style.display='grid';
 				journal_rows.children[id-1].scrollIntoView({
 					behavior: "smooth",
 					block: "center"
@@ -1185,7 +1185,7 @@
 				ledger.style.display = "none";
 				ledger_menu.style.display = "block";
 				ledger_account.style.display = "none";
-				fy.style.display = "flex";
+				fy.style.display = "grid";
 			};
 			let export_ledgers = async () => {
 				let zip = new JSZip();
@@ -1395,7 +1395,7 @@
 				bs.style.display = "none";
 				ledger.style.display = "block";
 				ledger_menu.style.display = "none";
-				ledger_account.style.display = "block";
+				ledger_account.style.display = "grid";
 				fetch_ledger_account(account);
 			};
 		</script>

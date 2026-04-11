@@ -20,6 +20,14 @@ if not row:
 	admin_password = bcrypt.hashpw(os.getenv("ADMIN_PASSWORD").encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 	cursor.execute("INSERT INTO users (username, password, token, admin) VALUES(?, ?, ?, ?)",
 		(os.getenv("ADMIN_USERNAME").strip().lower(), admin_password, user_token, 1))
+	cursor.execute("SELECT id FROM users WHERE username=?", (os.getenv("ADMIN_USERNAME"),))
+	row = cursor.fetchone()
+	row = dict(row)
+	cursor.execute(f"""CREATE TABLE IF NOT EXISTS fys_{row.get("id")} (
+		id INTEGER PRIMARY KEY UNIQUE NOT NULL,
+		name TEXT NOT NULL,
+		status TEXT NOT NULL DEFAULT "open"
+	)""")
 	db.commit()
 db.close()
 
